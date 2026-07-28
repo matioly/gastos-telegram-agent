@@ -17,10 +17,12 @@ Comprei um presente para Laura
 ## 🚀 Tecnologias
 
 ### Backend
-- Node.js
-- TypeScript
-- tsx
-- dotenv
+-   Node.js + TypeScript
+-   Telegraf
+-   OpenAI SDK
+-   Supabase
+-   PM2
+-   Oracle Cloud Always Free
 
 ### IA
 - OpenAI Responses API
@@ -149,9 +151,30 @@ SUPABASE_ANON_KEY=
 
 Executar:
 
-```bash
-npm run dev
+## Desenvolvimento
+
+``` bash
+npm install
+npm start
 ```
+
+## Deploy
+
+``` bash
+pm2 start npm --name gastos-bot -- start
+pm2 save
+pm2 startup
+```
+
+## Atualização
+
+``` bash
+cd ~/gastos-telegram-agent
+git pull
+npm install
+pm2 restart gastos-bot
+```
+
 
 ## 🧪 Testes
 
