@@ -20,6 +20,13 @@ export function validateTransaction(
         missingFields.push("data");
     }
 
+    if (
+        t.tipo === "saida" &&
+        !t.formaPagamento?.trim()
+    ) {
+        missingFields.push("formaPagamento");
+    }
+
     return {
         ...response,
         success: missingFields.length === 0,

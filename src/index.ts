@@ -1,6 +1,7 @@
 import { Telegraf, Markup } from "telegraf";
 import dotenv from "dotenv";
 
+import { TransactionService } from "./services/transactionService";
 import { processMessage } from "./ai/financeAgent";
 import { formatTransaction } from "./utils/messageFormatter";
 import { ConversationManager } from "./conversation/ConversationManager";
@@ -8,6 +9,7 @@ import { ConversationManager } from "./conversation/ConversationManager";
 dotenv.config();
 
 const conversationManager = new ConversationManager();
+const transactionService = new TransactionService();
 
 const token = process.env.TELEGRAM_TOKEN;
 
@@ -135,15 +137,20 @@ bot.action("save_transaction", async (ctx) => {
         return;
     }
 
-    // Aqui futuramente salvaremos no Supabase
-    console.log("SALVANDO:");
-    console.log(conversa.transaction);
-
-    conversationManager.finish(chatId);
-
-    await ctx.editMessageReplyMarkup(undefined);
-
-    await ctx.reply("✅ Lançamento salvo com sucesso!");
+    try {
+        await transactionService.save(
+            chatId,
+            conversa.transaction
+        );
+        conversationManager.finish(chatId);
+        await ctx.editMessageReplyMarkup(undefined);
+        await ctx.reply("✅ Lançamento salvo com sucesso!");
+    } catch (error) {
+        console.error(error);
+        await ctx.reply(
+            "❌ Erro ao salvar o lançamento."
+        );
+    }
 
     await ctx.answerCbQuery();
 
