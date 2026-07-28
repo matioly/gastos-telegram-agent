@@ -1,227 +1,284 @@
 # 💰 Gastos Telegram Agent
 
-> Um agente financeiro inteligente via **Telegram + OpenAI + Supabase** capaz de registrar receitas e despesas utilizando linguagem natural.
+> Assistente financeiro inteligente para Telegram utilizando OpenAI,
+> Supabase e TypeScript.
 
-## 📌 Visão Geral
+------------------------------------------------------------------------
 
-O projeto permite registrar movimentações financeiras conversando com um bot do Telegram.
+# Visão Geral
 
-### Exemplos
+O **Gastos Telegram Agent** é um agente conversacional que registra
+receitas e despesas através do Telegram.
 
-```text
-Abasteci R$120 no Shell
-Recebi R$5000 de salário
-Comprei um presente para Laura
+O usuário envia uma mensagem em linguagem natural, a IA interpreta o
+conteúdo, extrai os dados estruturados e grava a transação no Supabase.
+
+Exemplo:
+
+> "Abasteci o UP com R\$ 200 no posto Ipiranga no cartão"
+
+↓
+
+``` json
+{
+  "tipo":"saida",
+  "categoria":"Combustível",
+  "valor":200,
+  "veiculo":"UP"
+}
 ```
 
-## 🚀 Tecnologias
+------------------------------------------------------------------------
 
-### Backend
--   Node.js + TypeScript
+# Arquitetura
+
+``` text
+Telegram
+   │
+   ▼
+Telegraf Bot
+   │
+   ▼
+OpenAI
+(extração estruturada)
+   │
+   ▼
+Validação
+   │
+   ▼
+Supabase
+```
+
+------------------------------------------------------------------------
+
+# Stack
+
+-   Node.js
+-   TypeScript
 -   Telegraf
 -   OpenAI SDK
 -   Supabase
 -   PM2
 -   Oracle Cloud Always Free
 
-### IA
-- OpenAI Responses API
-- GPT-5.5
-- Structured Outputs
-- JSON Schema
+------------------------------------------------------------------------
 
-### Bot
-- Telegram Bot API
-- Telegraf
+# Estrutura
 
-### Banco
-- Supabase
-- PostgreSQL
-
-### Versionamento
-- Git
-- GitHub
-
-## 🏗 Arquitetura
-
-```text
-Telegram
-   │
-   ▼
-Telegraf
-   │
-   ▼
-Conversation Manager
-   │
-   ▼
-Finance Agent
-   │
-   ▼
-Transaction Validator
-   │
-   ▼
-Transaction Service
-   │
-   ├── UserRepository
-   └── TransactionRepository
-          │
-          ▼
-      Supabase
-```
-
-## 📁 Estrutura
-
-```text
+``` text
 src/
- ├── ai/
- ├── conversation/
- ├── repositories/
- ├── services/
- ├── types/
- ├── utils/
- └── index.ts
+│
+├── index.ts
+├── openai.ts
+├── services/
+│     └── supabase.ts
+├── prompts/
+├── utils/
+└── ...
 ```
 
-## ✅ Funcionalidades Implementadas
+------------------------------------------------------------------------
 
-- Bot do Telegram
-- Integração com OpenAI
-- Structured Outputs
-- Extração automática de transações
-- Atualização incremental da conversa
-- Validação local dos dados
-- Integração com Supabase
-- Repositório de usuários
-- Repositório de transações
-- Testes individuais dos componentes
+# Variáveis de ambiente
 
-## 📦 Estrutura da Transaction
+Crie um arquivo `.env`.
 
-- tipo
-- categoria
-- subcategoria
-- descricao
-- estabelecimento
-- valor
-- formaPagamento
-- veiculo
-- data
-- observacoes
-
-## 🗄 Banco de Dados
-
-### users
-- id
-- nome
-- telegram_chat_id
-- telegram_username
-- role
-- ativo
-
-### transactions
-- id
-- user_id
-- tipo
-- categoria
-- subcategoria
-- descricao
-- estabelecimento
-- valor
-- forma_pagamento
-- veiculo
-- data
-- observacoes
-- created_at
-- updated_at
-
-## ⚙️ Como executar
-
-```bash
-npm install
-```
-
-Criar `.env`:
-
-```env
-OPENAI_API_KEY=
+``` env
 TELEGRAM_TOKEN=
+OPENAI_API_KEY=
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
 ```
 
-Executar:
+Nunca envie esse arquivo ao GitHub.
 
-## Desenvolvimento
+------------------------------------------------------------------------
+
+# Instalação Local
 
 ``` bash
+git clone https://github.com/matioly/gastos-telegram-agent.git
+
+cd gastos-telegram-agent
+
 npm install
+```
+
+Inicie:
+
+``` bash
 npm start
 ```
 
-## Deploy
+------------------------------------------------------------------------
+
+# Deploy Oracle Cloud
+
+## VM
+
+-   Oracle Linux 9
+-   VM.Standard.E2.1.Micro
+
+## Dependências
+
+-   Git
+-   Node.js
+-   PM2
+
+## Primeiro deploy
+
+``` bash
+git clone https://github.com/matioly/gastos-telegram-agent.git
+
+cd gastos-telegram-agent
+
+npm install
+```
+
+Criar `.env`
+
+``` bash
+npm start
+```
+
+Depois colocar em produção:
 
 ``` bash
 pm2 start npm --name gastos-bot -- start
+
 pm2 save
+
 pm2 startup
 ```
 
-## Atualização
+Executar o comando sugerido pelo PM2 e novamente:
+
+``` bash
+pm2 save
+```
+
+------------------------------------------------------------------------
+
+# Atualização
 
 ``` bash
 cd ~/gastos-telegram-agent
+
 git pull
+
 npm install
+
 pm2 restart gastos-bot
 ```
 
+------------------------------------------------------------------------
 
-## 🧪 Testes
+# Comandos úteis
 
-```bash
-npx tsx test/testSupabase.ts
-npx tsx test/testTransactionRepository.ts
-npx tsx test/testUpdateAgent.ts
+Status
+
+``` bash
+pm2 status
 ```
 
-## 🛣 Roadmap
+Logs
 
-### MVP
-- [x] Telegram
-- [x] OpenAI
-- [x] Conversation Manager
-- [x] Validator
-- [x] Supabase
+``` bash
+pm2 logs gastos-bot
+```
 
-### Próximos passos
-- [ ] TransactionService
-- [ ] Salvar automaticamente no banco
-- [ ] Identificação por chat_id
-- [ ] Consulta de despesas
-- [ ] Consulta de receitas
-- [ ] Exclusão
-- [ ] Edição
+Reiniciar
 
-### Futuro
-- Dashboard Web
-- Aplicativo Mobile
-- OCR de comprovantes
-- OCR de notas fiscais
-- Importação de extratos
-- Cartões de crédito
-- Parcelamentos
-- Metas
-- Investimentos
-- Patrimônio
-- Fluxo de caixa
-- Assistente financeiro inteligente
+``` bash
+pm2 restart gastos-bot
+```
 
-## 💡 Filosofia
+Parar
 
-A IA interpreta linguagem natural.
+``` bash
+pm2 stop gastos-bot
+```
 
-Toda a regra de negócio permanece na aplicação, mantendo previsibilidade, facilidade de testes e independência do modelo.
+Reboot servidor
 
-## 📜 Licença
+``` bash
+sudo reboot
+```
 
-MIT
+------------------------------------------------------------------------
+
+# Fluxo da IA
+
+1.  Usuário envia mensagem.
+2.  OpenAI interpreta.
+3.  IA devolve JSON estruturado.
+4.  Sistema valida campos obrigatórios.
+5.  Caso falte informação, solicita complemento.
+6.  Após confirmação, grava no Supabase.
+
+------------------------------------------------------------------------
+
+# Roadmap
+
+## Curto prazo
+
+-   Confirmação de transações
+-   Melhorias de prompts
+-   Categorias inteligentes
+
+## Médio prazo
+
+-   Parcelamentos
+-   Transferências
+-   Metas financeiras
+-   Dashboard
+
+## Longo prazo
+
+-   Múltiplos usuários
+-   Compartilhamento familiar
+-   Relatórios mensais por IA
+-   Integração bancária
+
+------------------------------------------------------------------------
+
+# Troubleshooting
+
+## Bot não inicia
+
+``` bash
+pm2 logs gastos-bot
+```
+
+## Atualizar dependências
+
+``` bash
+npm install
+```
+
+## Reiniciar
+
+``` bash
+pm2 restart gastos-bot
+```
+
+## Verificar serviço
+
+``` bash
+systemctl status pm2-opc
+```
+
+------------------------------------------------------------------------
+
+# Segurança
+
+-   Nunca subir `.env`
+-   Rotacionar chaves periodicamente
+-   Restringir acesso SSH
+-   Utilizar chave privada para acesso à VM
+
+------------------------------------------------------------------------
+
+# Licença
+
+Projeto privado.
