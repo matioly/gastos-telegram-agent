@@ -1,43 +1,118 @@
 export type IntentType = "registro" | "consulta";
 
 export async function detectIntent(
-    message: string
+  message: string
 ): Promise<IntentType> {
+  const text = normalizarTexto(message);
 
-    const text = message.toLowerCase().trim();
+  const registroScore = scoreRegistro(text);
+  const consultaScore = scoreConsulta(text);
 
-    const palavrasConsulta = [
-        "quanto",
-        "quantos",
-        "qual",
-        "quais",
+  console.log({
+    text,
+    registroScore,
+    consultaScore,
+  });
 
-        "gastei",
-        "gastou",
+  return consultaScore > registroScore
+    ? "consulta"
+    : "registro";
+}
 
-        "listar",
-        "lista",
+function scoreRegistro(text: string): number {
+  let score = 0;
 
-        "mostrar",
-        "mostre",
+  // Valor
+  if (/\b\d+(?:[.,]\d{1,2})?\b/.test(text)) {
+    score += 5;
+  }
 
-        "ver",
+  // Forma de pagamento
+  const pagamentos = [
+    "pix",
+    "credito",
+    "crédito",
+    "debito",
+    "débito",
+    "cartao",
+    "cartão",
+    "dinheiro"
+  ];
 
-        "saldo",
-        "extrato",
-        "relatório",
-        "resumo",
+  if (pagamentos.some(p => text.includes(p))) {
+    score += 3;
+  }
 
-        "total",
-        "média",
-        "media",
-        "maior",
-        "menor"
-    ];
+  // Categorias mais comuns
+  const categorias = [
+    "mercado",
+    "farmacia",
+    "farmácia",
+    "gasolina",
+    "combustivel",
+    "combustível",
+    "ifood",
+    "restaurante",
+    "lanche",
+    "escola",
+    "saude",
+    "saúde"
+  ];
 
-    if (palavrasConsulta.some(p => text.includes(p))) {
-        return "consulta";
+  if (categorias.some(c => text.includes(c))) {
+    score += 2;
+  }
+
+  return score;
+}
+
+function scoreConsulta(text: string): number {
+  let score = 0;
+
+  const keywords = [
+    "quanto",
+    "qual",
+    "quais",
+    "gastei",
+    "gastou",
+    "gastos",
+    "listar",
+    "lista",
+    "mostrar",
+    "mostra",
+    "mostre",
+    "ver",
+    "saldo",
+    "extrato",
+    "resumo",
+    "total",
+    "media",
+    "média",
+    "ultimos",
+    "últimos",
+    "ultimas",
+    "últimas",
+    "teve",
+    "tem"
+  ];
+
+  keywords.forEach(k => {
+    if (text.includes(k)) {
+      score += 2;
     }
+  });
 
-    return "registro";
+  if (text.includes("?")) {
+    score += 2;
+  }
+
+  return score;
+}
+
+function normalizarTexto(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 }

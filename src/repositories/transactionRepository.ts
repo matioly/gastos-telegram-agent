@@ -3,12 +3,17 @@ import { Transaction } from "../types/transaction";
 
 export class TransactionRepository {
 
-    async save(userId: string, transaction: Transaction) {
+    async save(
+        ownerUserId: string,
+        personId: string,
+        transaction: Transaction
+    ) {
 
         const { data, error } = await supabase
             .from("transactions")
             .insert({
-                user_id: userId,
+                user_id: ownerUserId,
+                person_id: personId,
                 tipo: transaction.tipo,
                 categoria: transaction.categoria,
                 subcategoria: transaction.subcategoria,

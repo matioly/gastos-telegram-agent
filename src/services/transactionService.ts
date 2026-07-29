@@ -9,17 +9,46 @@ export class TransactionService {
 
     async save(chatId: number, transaction: Transaction) {
 
-        const user = await this.userRepository.findByTelegramChatId(chatId);
+        // Dono da conta (Telegram)
+        const owner = await this.userRepository.findByTelegramChatId(chatId);
 
-        if (!user) {
+        if (!owner) {
             throw new Error(`Usuário com chat_id ${chatId} não encontrado.`);
         }
 
         const normalizedTransaction =
             this.normalizeTransaction(transaction);
 
+        // Por padrão, quem realizou a despesa é o próprio dono da conta
+        let personId = owner.id;
+
+        // Se a IA identificou outra pessoa (Pamela, por exemplo),
+        // buscamos o ID correspondente na tabela users.
+        if (normalizedTransaction.pessoa) {
+
+            const person =
+                await this.userRepository.findByName(
+                    normalizedTransaction.pessoa
+                );
+
+            if (!person) {
+                throw new Error(
+                    `Pessoa '${normalizedTransaction.pessoa}' não encontrada.`
+                );
+            }
+
+            personId = person.id;
+        }
+
+        console.log("================================");
+        console.log("Pessoa recebida:", normalizedTransaction.pessoa);
+        console.log("Owner:", owner.id);
+        console.log("Person:", personId);
+        console.log("================================");
+
         return this.transactionRepository.save(
-            user.id,
+            owner.id,
+            personId,
             normalizedTransaction
         );
     }
@@ -59,6 +88,7 @@ export class TransactionService {
 
             default:
                 return data;
+
         }
 
     }
@@ -153,7 +183,11 @@ export class TransactionService {
 
     private formatDate(date: Date): string {
 
-        return date.toISOString().split("T")[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
 
     }
 

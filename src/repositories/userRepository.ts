@@ -32,4 +32,19 @@ export class UserRepository {
         return data;
     }
 
+    async findByName(name: string) {
+
+        const { data, error } = await supabase
+            .from("users")
+            .select("*")
+            .ilike("nome", name)
+            .single();
+
+        if (error) {
+            return null;
+        }
+
+        return data;
+    }
+
 }

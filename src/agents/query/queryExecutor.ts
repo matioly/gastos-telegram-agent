@@ -183,7 +183,27 @@ function getPeriodRange(periodo: QueryIntent["periodo"]) {
 }
 
 function formatDate(date: Date): string {
-    return date.toISOString().split("T")[0];
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+
+}
+
+async function resolvePersonId(name: string): Promise<string | null> {
+    const { data, error } = await supabase
+        .from("users")
+        .select("id")
+        .ilike("nome", name)
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+
+    return data?.id ?? null;
 }
 
 async function executeSum(intent: QueryIntent) {
@@ -207,6 +227,9 @@ async function executeSum(intent: QueryIntent) {
         query.ilike("forma_pagamento", intent.filtros.formaPagamento);
     }
 
+    console.log("Agora:", new Date().toString());
+    console.log("ISO:", new Date().toISOString());
+
     const range = getPeriodRange(intent.periodo);
 
     if (range) {
@@ -220,18 +243,10 @@ async function executeSum(intent: QueryIntent) {
     }
 
     if (intent.filtros.pessoa) {
-        const { data: user, error: userError } = await supabase
-            .from("users")
-            .select("id")
-            .ilike("nome", intent.filtros.pessoa)
-            .maybeSingle();
+        const personId = await resolvePersonId(intent.filtros.pessoa);
 
-        if (userError) {
-            throw userError;
-        }
-
-        if (user) {
-            query.eq("user_id", user.id);
+        if (personId) {
+            query.eq("person_id", personId);
         }
     }
 
@@ -308,20 +323,13 @@ async function executeList(intent: QueryIntent) {
     }
 
     // Pessoa
+
     if (intent.filtros.pessoa) {
 
-        const { data: user, error: userError } = await supabase
-            .from("users")
-            .select("id")
-            .ilike("nome", intent.filtros.pessoa)
-            .maybeSingle();
+        const personId = await resolvePersonId(intent.filtros.pessoa);
 
-        if (userError) {
-            throw userError;
-        }
-
-        if (user) {
-            query = query.eq("user_id", user.id);
+        if (personId) {
+            query = query.eq("person_id", personId);
         }
     }
 
